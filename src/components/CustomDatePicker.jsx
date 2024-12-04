@@ -14,11 +14,11 @@ const CustomDatePicker = ({ sessions, onDateSelect }) => {
 
     return (
       <div className="relative w-full h-full flex items-center justify-center">
-        <span className={isSessionDay ? 'text-orange-500 font-medium' : ''}>
+        <span className={isSessionDay ? 'text-amber-900 font-medium' : ''}>
           {day}
         </span>
         {isSessionDay && (
-          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-orange-500 rounded-full" />
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-amber-600 rounded-full" />
         )}
       </div>
     );
@@ -31,7 +31,7 @@ const CustomDatePicker = ({ sessions, onDateSelect }) => {
         renderDayContents={renderDayContents}
         onChange={onDateSelect}
         highlightDates={sessionDates}
-        calendarClassName="bg-white rounded-lg shadow-lg border border-orange-200"
+        calendarClassName="bg-white rounded-lg shadow-lg border border-amber-300"
         dayClassName={date => 
           sessionDates.some(sessionDate => 
             sessionDate.toDateString() === date.toDateString()

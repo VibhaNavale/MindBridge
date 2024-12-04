@@ -35,7 +35,7 @@ body {
 
 /* Input and Textarea Focus Styles */
 input:focus, textarea:focus {
-  @apply ring-2 ring-orange-500 ring-opacity-50 outline-none;
+  @apply ring-2 ring-amber-500 ring-opacity-50 outline-none;
 }
 
 /* Button Hover Effects */

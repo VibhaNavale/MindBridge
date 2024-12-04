@@ -7,6 +7,7 @@ import { Input } from './ui/input';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import "react-datepicker/dist/react-datepicker.css";
+import { BsMic } from 'react-icons/bs';
 import CustomDatePicker from './CustomDatePicker';
 
 const Dashboard = () => {
@@ -249,7 +250,7 @@ const Dashboard = () => {
       {/* Left Sidebar */}
       <div className="w-16 bg-white fixed left-0 top-0 h-full flex flex-col items-center py-6">
         {/* Logo */}
-        <div className="text-orange-500 mb-8">
+        <div className="text-amber-600 mb-8">
           <svg viewBox="0 0 24 24" className="w-8 h-8">
             <path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
           </svg>
@@ -257,7 +258,7 @@ const Dashboard = () => {
 
         {/* Nav Icons */}
         <div className="flex flex-col gap-6">
-          <button className="p-3 text-orange-500 rounded-xl hover:bg-orange-50">
+          <button className="p-3 text-amber-600 rounded-xl hover:bg-amber-50">
             <FileText className="w-6 h-6" />
           </button>
           <button className="p-3 text-gray-400 rounded-xl hover:bg-gray-50">
@@ -283,7 +284,7 @@ const Dashboard = () => {
           <div className="flex justify-between items-start mb-8">
             <div className="flex gap-8">
               <img
-                src="/api/placeholder/120/120"
+                src="../assets/JaneDoe.png"
                 alt="Patient"
                 className="w-24 h-24 rounded-xl object-cover"
               />
@@ -306,7 +307,7 @@ const Dashboard = () => {
                     <span className="font-medium">{patientInfo.lastSession}</span>
                     <button
                       onClick={handleLastSessionClick}
-                      className="ml-2 text-orange-500 hover:text-orange-600 transition-colors"
+                      className="ml-2 text-amber-600 hover:text-amber-700 transition-colors"
                     >
                       <Calendar className="w-4 h-4" />
                     </button>
@@ -347,7 +348,7 @@ const Dashboard = () => {
                   ) : (
                     <button
                       onClick={() => setIsAddingTag(true)}
-                      className="p-1.5 rounded-full bg-orange-100 text-orange-500 hover:bg-orange-200"
+                      className="p-1.5 rounded-full bg-amber-100 text-amber-600 hover:bg-amber-200"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -355,12 +356,12 @@ const Dashboard = () => {
                   {patientInfo.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1.5 bg-orange-500 text-white rounded-full text-sm flex items-center gap-2"
+                      className="px-3 py-1.5 bg-amber-600 text-white rounded-full text-sm flex items-center gap-2"
                     >
                       {tag}
                       <button
                         onClick={() => handleRemoveTag(tag)}
-                        className="hover:bg-orange-600 rounded-full"
+                        className="hover:bg-amber-700 rounded-full"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -372,7 +373,7 @@ const Dashboard = () => {
             <AlertTriangle className="w-6 h-6 text-yellow-500" />
           </div>
 
-          {/* Session Notes Section */}
+          {/* TODO: Patient Summary Section */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Patient Summary:</h2>
@@ -383,7 +384,6 @@ const Dashboard = () => {
                 {/* Header */}
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-500 text-sm">
-                    
                   </span>
                 </div>
 
@@ -391,7 +391,6 @@ const Dashboard = () => {
                 <div
                   className={`text-gray-700 mb-4`}
                 ></div>
-
               </div>
             </Card>
 
@@ -399,7 +398,7 @@ const Dashboard = () => {
             <div className="flex justify-end gap-2 mt-4">
               <Button
                 onClick={handleAddNote}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
+                className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" /> Generate Summary
               </Button>
@@ -432,14 +431,20 @@ const Dashboard = () => {
             {/* Add New Note Button */}
             <div className="flex justify-end gap-2">
               <Button
+                // onClick={handleSpeechToText} // TODO: handle speech-to-text functionality here
+                className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
+              >
+                <BsMic className="w-4 h-4" /> {/* Recorder icon */}
+                Dictate Note
+              </Button>
+              <Button
                 onClick={handleAddNote}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
+                className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" /> Add New Note
               </Button>
             </div>
           </div>
-
 
           {/* Previous Sessions */}
           {patientInfo.sessions.length > 0 && (
@@ -490,13 +495,13 @@ const Dashboard = () => {
             <Card className="p-6 space-y-4 overflow-y-auto max-h-96">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-orange-50 rounded-lg">
-                    <FileText className="w-5 h-5 text-orange-500" />
+                  <div className="p-2 bg-amber-50 rounded-lg">
+                    <FileText className="w-5 h-5 text-amber-600" />
                   </div>
                   <h3 className="font-medium text-gray-900">Drug History</h3>
                 </div>
                 <button
-                  className="text-orange-500 hover:text-orange-600"
+                  className="text-amber-600 hover:text-amber-700"
                   onClick={() => setIsAddingMedication(true)}
                 >
                   <Plus className="w-5 h-5" />
@@ -515,7 +520,7 @@ const Dashboard = () => {
                     />
                     <Button
                       onClick={handleAddMedication}
-                      className="px-2 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-md"
+                      className="px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-md"
                     >
                       Add
                     </Button>
@@ -547,13 +552,13 @@ const Dashboard = () => {
             <Card className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-orange-50 rounded-lg">
-                    <span className="text-orange-500 text-xl">🍷</span>
+                  <div className="p-2 bg-amber-50 rounded-lg">
+                    <span className="text-amber-600 text-xl">🍷</span>
                   </div>
                   <h3 className="font-medium text-gray-900">Addictions</h3>
                 </div>
                 <button
-                  className="text-orange-500 hover:text-orange-600"
+                  className="text-amber-600 hover:text-amber-700"
                   onClick={() => setIsAddingAddiction(true)}
                 >
                   <Plus className="w-5 h-5" />
@@ -572,7 +577,7 @@ const Dashboard = () => {
                     />
                     <Button
                       onClick={handleAddAddiction}
-                      className="px-2 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-md"
+                      className="px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-md"
                     >
                       Add
                     </Button>
@@ -603,8 +608,8 @@ const Dashboard = () => {
             {/* Recent Session Recordings */}
             <Card className="p-6">
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-orange-50 rounded-lg">
-                  <Video className="w-5 h-5 text-orange-500" />
+                <div className="p-2 bg-amber-50 rounded-lg">
+                  <Video className="w-5 h-5 text-amber-600" />
                 </div>
                 <h3 className="font-medium text-gray-900">Recent Session Recordings</h3>
               </div>
