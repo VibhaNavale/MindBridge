@@ -9,11 +9,13 @@ import 'react-quill/dist/quill.snow.css';
 import "react-datepicker/dist/react-datepicker.css";
 import { BsMic } from 'react-icons/bs';
 import CustomDatePicker from './CustomDatePicker';
+import useSpeechToText from '../hooks/useSpeechToText';
 
 const Dashboard = () => {
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [newNote, setNewNote] = useState('');
+  const [textInput, setTextInput] =  useState('');
   const [expandedCards, setExpandedCards] = useState({});
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [newMedication, setNewMedication] = useState('');
@@ -21,6 +23,14 @@ const Dashboard = () => {
   const [newAddiction, setNewAddiction] = useState('');
   const [isAddingAddiction, setIsAddingAddiction] = useState(false);
   const datePickerRef = useRef(null);
+  const { isListening, transcript, startListening, stopListening } = useSpeechToText({continuous: true})
+  const startStopListening = () => {
+    isListening ? stopVoiceInput() : startListening()
+  }
+  const stopVoiceInput = () => {
+    setTextInput( prevVal => prevVal + (transcript.length ? (prevVal.length ? ' ' : '') + transcript : ''))
+    stopListening()
+  }
 
   const moods = [
     { primary: "Happy", qualifier: "but tired" },
@@ -420,7 +430,7 @@ const Dashboard = () => {
                 }}
                 theme="bubble"
                 placeholder="Enter session notes..."
-                value={newNote}
+                value={newNote }
                 onChange={setNewNote}
                 modules={{
                   toolbar: false, // Toolbar hidden for simplicity
@@ -431,12 +441,17 @@ const Dashboard = () => {
             {/* Add New Note Button */}
             <div className="flex justify-end gap-2">
               <Button
-                // onClick={handleSpeechToText} // TODO: handle speech-to-text functionality here
+                onClick={() => {startStopListening()}} // TODO: handle speech-to-text functionality here
                 className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
               >
                 <BsMic className="w-4 h-4" /> {/* Recorder icon */}
-                Dictate Note
+                {isListening ? "Stop recording" : "Dictate Note"  }
               </Button>
+              <textarea
+                disabled = {isListening}
+                value = {isListening ? textInput + (transcript.length ? (textInput.length ? ' ' : '') + transcript : '') : textInput}
+                onChange={(e) => {setTextInput(e.target.value)}}
+              />
               <Button
                 onClick={handleAddNote}
                 className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
