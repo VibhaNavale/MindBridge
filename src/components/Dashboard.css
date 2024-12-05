@@ -1,28 +1,7 @@
-.ReactQuill .ql-container {
-    width: 100% !important;
-    /* Ensure the editor spans the full container width */
-    min-height: 120px !important;
-    /* Maintain custom height */
-}
-
-.ReactQuill .ql-toolbar {
-    width: 100% !important;
-    /* Ensure the toolbar spans the full width */
-    padding: 5px 10px;
-    /* Optional: Adjust toolbar padding */
-}
-
-.ReactQuill .ql-editor {
-    min-height: 120px;
-    /* Maintain custom height of the text area */
-}
-
-/* Optional: Fix the z-index if the toolbar gets hidden or overlapped */
-.ReactQuill .ql-toolbar {
-    z-index: 9999;
-}
-
 .custom-quill-editor .ql-editor {
     font-size: 16px;
-  }
-  
+}
+
+.ql-container {
+    border: none !important;
+}
