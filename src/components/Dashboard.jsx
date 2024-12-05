@@ -173,7 +173,7 @@ const Dashboard = () => {
   };
 
   const handleAddNote = async () => {
-    if (newNote.trim()) {
+    if (newNote.trim() !== "") {
       const now = new Date();
 
       // Get a random mood
@@ -193,7 +193,7 @@ const Dashboard = () => {
 
       // Clear the input field
       setNewNote('');
-      toast.success("Session notes deleted successfully.", {
+      toast.success("Session notes successfully added!", {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -545,7 +545,9 @@ const Dashboard = () => {
               <ReactQuill
                 className="min-h-[120px] w-full custom-quill-editor"
                 style={{
-                  height: "150px", // Custom height of the editor container
+                  minHeight: "150px",
+                  maxHeight: "200px",
+                  overflowY: "scroll"
                 }}
                 theme="snow"
                 placeholder="Enter session notes..."

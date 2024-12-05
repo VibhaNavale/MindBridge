@@ -1,7 +1,15 @@
 .custom-quill-editor .ql-editor {
     font-size: 16px;
+    top: 0;
+    z-index: 10;
+    background: white;
 }
 
 .ql-container {
     border: none !important;
+}
+  
+.custom-quill-editor .ql-container {
+    max-height: 150px;
+    overflow-y: auto;
 }
