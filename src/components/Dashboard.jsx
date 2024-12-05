@@ -10,6 +10,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { BsMic } from 'react-icons/bs';
 import CustomDatePicker from './CustomDatePicker';
 import useSpeechToText from '../hooks/useSpeechToText';
+import patientImage from '../assets/JaneDoe.png';
+
 
 const Dashboard = () => {
   const [isAddingTag, setIsAddingTag] = useState(false);
@@ -293,11 +295,11 @@ const Dashboard = () => {
           {/* Patient Info Section */}
           <div className="flex justify-between items-start mb-8">
             <div className="flex gap-8">
-              <img
-                src="../assets/JaneDoe.png"
-                alt="Patient"
-                className="w-24 h-24 rounded-xl object-cover"
-              />
+            <img
+  src={patientImage}
+  alt="Patient"
+  className="w-24 h-24 rounded-xl object-cover"
+/>
               <div className="space-y-6">
                 <div className="grid grid-cols-4 gap-8">
                   <div className="flex items-center">
