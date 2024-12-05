@@ -45,7 +45,11 @@ const Dashboard = () => {
     name: "Jane Doe",
     age: 28,
     gender: "Female",
-    lastSession: "10/27/2024",
+    lastSession: new Date().toLocaleDateString('en-US', { 
+      month: '2-digit', 
+      day: '2-digit', 
+      year: '2-digit'
+    }),
     tags: ["ADHD", "Low Mood", "Anxiety", "Social Skills"],
     sessions: [],
     drugHistory: [
