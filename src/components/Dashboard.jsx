@@ -15,7 +15,7 @@ const Dashboard = () => {
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [newNote, setNewNote] = useState('');
-  const [textInput, setTextInput] =  useState('');
+  const [textInput, setTextInput] = useState('');
   const [expandedCards, setExpandedCards] = useState({});
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [newMedication, setNewMedication] = useState('');
@@ -23,12 +23,12 @@ const Dashboard = () => {
   const [newAddiction, setNewAddiction] = useState('');
   const [isAddingAddiction, setIsAddingAddiction] = useState(false);
   const datePickerRef = useRef(null);
-  const { isListening, transcript, startListening, stopListening } = useSpeechToText({continuous: true})
+  const { isListening, transcript, startListening, stopListening } = useSpeechToText({ continuous: true })
   const startStopListening = () => {
     isListening ? stopVoiceInput() : startListening()
   }
   const stopVoiceInput = () => {
-    setTextInput( prevVal => prevVal + (transcript.length ? (prevVal.length ? ' ' : '') + transcript : ''))
+    setTextInput(prevVal => prevVal + (transcript.length ? (prevVal.length ? ' ' : '') + transcript : ''))
     stopListening()
   }
 
@@ -70,11 +70,25 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
+    if (isListening && transcript.length > 0) {
+      setNewNote((prevNote) => {
+        // Avoid duplicating transcript in newNote
+        if (prevNote.endsWith(transcript)) {
+          return prevNote;
+        }
+        return prevNote + (prevNote.length ? ' ' : '') + transcript;
+      });
+    }
+  }, [transcript, isListening]);
+
+  useEffect(() => {
     function handleClickOutside(event) {
       if (datePickerRef.current && !datePickerRef.current.contains(event.target)) {
         setShowDatePicker(false);
       }
     }
+
+
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
@@ -430,8 +444,13 @@ const Dashboard = () => {
                 }}
                 theme="bubble"
                 placeholder="Enter session notes..."
-                value={newNote }
-                onChange={setNewNote}
+                // value={newNote }
+                value={newNote} // Always display the updated note
+                onChange={(value) => {
+                  if (!isListening) {
+                    setNewNote(value); // Update directly when not listening
+                  }
+                }}
                 modules={{
                   toolbar: false, // Toolbar hidden for simplicity
                 }}
@@ -441,17 +460,17 @@ const Dashboard = () => {
             {/* Add New Note Button */}
             <div className="flex justify-end gap-2">
               <Button
-                onClick={() => {startStopListening()}} // TODO: handle speech-to-text functionality here
+                onClick={() => { startStopListening() }} // TODO: handle speech-to-text functionality here
                 className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
               >
                 <BsMic className="w-4 h-4" /> {/* Recorder icon */}
-                {isListening ? "Stop recording" : "Dictate Note"  }
+                {isListening ? "Stop recording" : "Dictate Note"}
               </Button>
-              <textarea
-                disabled = {isListening}
-                value = {isListening ? textInput + (transcript.length ? (textInput.length ? ' ' : '') + transcript : '') : textInput}
-                onChange={(e) => {setTextInput(e.target.value)}}
-              />
+              {/* <textarea
+                disabled={isListening}
+                value={isListening ? textInput + (transcript.length ? (textInput.length ? ' ' : '') + transcript : '') : textInput}
+                onChange={(e) => { setTextInput(e.target.value) }}
+              /> */}
               <Button
                 onClick={handleAddNote}
                 className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
