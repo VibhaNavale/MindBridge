@@ -5,6 +5,10 @@ import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import ReactQuill from 'react-quill';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import PulseLoader from "react-spinners/PulseLoader";
+import ScaleLoader from "react-spinners/ScaleLoader";
 import 'react-quill/dist/quill.snow.css';
 import "react-datepicker/dist/react-datepicker.css";
 import { BsMic } from 'react-icons/bs';
@@ -17,8 +21,8 @@ const Dashboard = () => {
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [newNote, setNewNote] = useState('');
-  const [textInput, setTextInput] = useState('');
   const [patientSummaries, setPatientSummaries] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [expandedCards, setExpandedCards] = useState({});
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [newMedication, setNewMedication] = useState('');
@@ -26,14 +30,7 @@ const Dashboard = () => {
   const [newAddiction, setNewAddiction] = useState('');
   const [isAddingAddiction, setIsAddingAddiction] = useState(false);
   const datePickerRef = useRef(null);
-  const { isListening, transcript, startListening, stopListening } = useSpeechToText({ continuous: true })
-  const startStopListening = () => {
-    isListening ? stopVoiceInput() : startListening()
-  }
-  const stopVoiceInput = () => {
-    setTextInput(prevVal => prevVal + (transcript.length ? (prevVal.length ? ' ' : '') + transcript : ''))
-    stopListening()
-  }
+  const { isListening, transcript, startListening, stopListening } = useSpeechToText();
 
   const moods = [
     { primary: "Happy", qualifier: "but tired" },
@@ -72,6 +69,13 @@ const Dashboard = () => {
     fetchSessionNotes();
   }, []);
 
+  // Handle updates when speech is active
+  useEffect(() => {
+    if (isListening) {
+      setNewNote(transcript); // Update ReactQuill content during speech
+    }
+  }, [transcript, isListening]);
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (datePickerRef.current && !datePickerRef.current.contains(event.target)) {
@@ -84,6 +88,14 @@ const Dashboard = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [datePickerRef]);
+
+  const handleStartStopListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
 
   const handleDateSelect = (date) => {
     const selectedSession = patientInfo.sessions.find(session =>
@@ -181,6 +193,16 @@ const Dashboard = () => {
 
       // Clear the input field
       setNewNote('');
+      toast.success("Session notes deleted successfully.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      })
       await fetchSessionNotes();
     }
   };
@@ -197,6 +219,16 @@ const Dashboard = () => {
         return;
       }
 
+      toast.success("Previous session notes deleted.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      })
       // Update the UI after successful deletion
       await fetchSessionNotes();
     } catch (error) {
@@ -205,6 +237,7 @@ const Dashboard = () => {
   };
 
   const fetchGenerateSummary = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('PatientSummaries')
@@ -226,6 +259,10 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching patient summaries:', error);
+    } finally {
+      // Wait for 2 seconds before stopping the loader
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setLoading(false);
     }
   };
 
@@ -303,6 +340,8 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
+      <ToastContainer position="top-center" />
+
       {/* Left Sidebar */}
       <div className="w-16 bg-white fixed left-0 top-0 h-full flex flex-col items-center py-6">
         {/* Logo */}
@@ -435,50 +474,55 @@ const Dashboard = () => {
               <h2 className="text-lg font-semibold">Patient Summary:</h2>
             </div>
 
-            {patientSummaries.length > 0 ? (
-              <Card className="p-6 space-y-4">
-                {patientSummaries.map((summary) => (
-                  <div key={summary.id} className="mb-4">
-                    {/* Summary Header */}
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="font-medium">Summary</h4>
-                      <span className="text-gray-500 text-sm">{summary.date}</span>
-                    </div>
-
-                    {/* Summary Content with Expand/Collapse */}
-                    <div
-                      className={`text-gray-700 mb-4 ${expandedCards[summary.id] ? "" : "line-clamp-3"
-                        }`}
-                    >
-                      {summary.summary}
-                    </div>
-
-                    {summary.summary.length > 100 && (
-                      <div className="flex justify-between items-center">
-                        <button
-                          className="text-sm text-gray-500 flex items-center"
-                          onClick={() => toggleCard(summary.id)}
-                        >
-                          {expandedCards[summary.id] ? "Collapse" : "Expand"}
-                          <span
-                            className={`ml-1 transform ${expandedCards[summary.id] ? "rotate-180" : ""
-                              }`}
-                          >
-                            ▼
-                          </span>
-                        </button>
+            {loading ? (
+              <div className="flex justify-center">
+                <PulseLoader color="#ffbf00" loading={loading} size={13} />
+              </div>
+            ) :
+              patientSummaries.length > 0 ? (
+                <Card className="p-6 space-y-4">
+                  {patientSummaries.map((summary) => (
+                    <div key={summary.id} className="mb-4">
+                      {/* Summary Header */}
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-medium">Summary</h4>
+                        <span className="text-gray-500 text-sm">{summary.date}</span>
                       </div>
-                    )}
-                  </div>
-                ))}
-              </Card>
-            ) : (
-              <Card className="p-6 text-gray-500">
-                No summaries available. Click "Generate Summary" to fetch.
-              </Card>
-            )}
 
-            {/* Add Generate Summary */}
+                      {/* Summary Content with Expand/Collapse */}
+                      <div
+                        className={`text-gray-700 mb-4 ${expandedCards[summary.id] ? "" : "line-clamp-3"
+                          }`}
+                      >
+                        {summary.summary}
+                      </div>
+
+                      {summary.summary.length > 100 && (
+                        <div className="flex justify-between items-center">
+                          <button
+                            className="text-sm text-gray-500 flex items-center"
+                            onClick={() => toggleCard(summary.id)}
+                          >
+                            {expandedCards[summary.id] ? "Collapse" : "Expand"}
+                            <span
+                              className={`ml-1 transform ${expandedCards[summary.id] ? "rotate-180" : ""
+                                }`}
+                            >
+                              ▼
+                            </span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </Card>
+              ) : (
+                <Card className="p-6 text-gray-500">
+                  No summaries available. Click "Generate Summary" to fetch.
+                </Card>
+              )}
+
+            {/* Generate Summary Button */}
             <div className="flex justify-end gap-2 mt-4">
               <Button
                 onClick={fetchGenerateSummary}
@@ -500,7 +544,7 @@ const Dashboard = () => {
               <ReactQuill
                 className="min-h-[120px] w-full custom-quill-editor"
                 style={{
-                  height: '120px',      // Custom height of the editor container
+                  height: "120px", // Custom height of the editor container
                 }}
                 theme="bubble"
                 placeholder="Enter session notes..."
@@ -512,26 +556,25 @@ const Dashboard = () => {
               />
             </div>
 
-            {/* Add New Note */}
+            {/* Buttons for Dictation and Adding Notes */}
             <div className="flex justify-end gap-2">
-              <Button
-                onClick={() => { startStopListening() }}
+              <button
+                onClick={handleStartStopListening}
                 className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
               >
-                <BsMic className="w-4 h-4" /> {/* Recorder icon */}
+                {isListening ? (
+                  <ScaleLoader color="#fff" height={12} width={2} radius={20} />
+                ) : (
+                  <BsMic className="w-4 h-4" /> // Mic icon
+                )}
                 {isListening ? "Stop recording" : "Dictate Note"}
-              </Button>
-              <textarea
-                disabled={isListening}
-                value={isListening ? textInput + (transcript.length ? (textInput.length ? ' ' : '') + transcript : '') : textInput}
-                onChange={(e) => { setTextInput(e.target.value) }}
-              />
-              <Button
+              </button>
+              <button
                 onClick={handleAddNote}
                 className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" /> Add New Note
-              </Button>
+              </button>
             </div>
           </div>
 
