@@ -45,7 +45,7 @@ const Dashboard = () => {
     name: "Jane Doe",
     age: 28,
     gender: "Female",
-    lastSession: "10/27/2024",
+    lastSession: "12/05/2024",
     tags: ["ADHD", "Low Mood", "Anxiety", "Social Skills"],
     sessions: [
 
@@ -278,7 +278,7 @@ const Dashboard = () => {
         ['clean'],
       ],
       clipboard: {
-        matchVisual: false,  // Disable extra line breaks when pasting HTML
+        matchVisual: true,  // Disable extra line breaks when pasting HTML
       },
     },
     formats: [
@@ -527,6 +527,7 @@ const Dashboard = () => {
               <Button
                 onClick={fetchGenerateSummary}
                 className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
+                style={{borderRadius: "40px"}}
               >
                 <Plus className="w-4 h-4" /> Generate Summary
               </Button>
@@ -540,27 +541,27 @@ const Dashboard = () => {
             </div>
 
             {/* Rich Text Editor for New Note */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
+            <div className="bg-white rounded-lg border border-gray-200">
               <ReactQuill
                 className="min-h-[120px] w-full custom-quill-editor"
                 style={{
-                  height: "120px", // Custom height of the editor container
+                  height: "150px", // Custom height of the editor container
                 }}
-                theme="bubble"
+                theme="snow"
                 placeholder="Enter session notes..."
                 value={newNote}
                 onChange={setNewNote}
-                modules={{
-                  toolbar: false, // Toolbar hidden for simplicity
-                }}
+                modules={ReactQuillEditor.modules}
+                formats={ReactQuillEditor.formats}
               />
             </div>
 
             {/* Buttons for Dictation and Adding Notes */}
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 mt-4">
               <button
                 onClick={handleStartStopListening}
                 className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
+                style={{borderRadius: "40px"}}
               >
                 {isListening ? (
                   <ScaleLoader color="#fff" height={12} width={2} radius={20} />
@@ -572,6 +573,7 @@ const Dashboard = () => {
               <button
                 onClick={handleAddNote}
                 className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
+                style={{borderRadius: "40px"}}
               >
                 <Plus className="w-4 h-4" /> Add New Note
               </button>
