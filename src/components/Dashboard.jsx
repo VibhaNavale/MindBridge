@@ -11,13 +11,14 @@ import { BsMic } from 'react-icons/bs';
 import CustomDatePicker from './CustomDatePicker';
 import useSpeechToText from '../hooks/useSpeechToText';
 import patientImage from '../assets/JaneDoe.png';
-
+import './Dashboard.css';
 
 const Dashboard = () => {
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [newNote, setNewNote] = useState('');
-  const [textInput, setTextInput] =  useState('');
+  const [textInput, setTextInput] = useState('');
+  const [patientSummaries, setPatientSummaries] = useState([]);
   const [expandedCards, setExpandedCards] = useState({});
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [newMedication, setNewMedication] = useState('');
@@ -25,12 +26,12 @@ const Dashboard = () => {
   const [newAddiction, setNewAddiction] = useState('');
   const [isAddingAddiction, setIsAddingAddiction] = useState(false);
   const datePickerRef = useRef(null);
-  const { isListening, transcript, startListening, stopListening } = useSpeechToText({continuous: true})
+  const { isListening, transcript, startListening, stopListening } = useSpeechToText({ continuous: true })
   const startStopListening = () => {
     isListening ? stopVoiceInput() : startListening()
   }
   const stopVoiceInput = () => {
-    setTextInput( prevVal => prevVal + (transcript.length ? (prevVal.length ? ' ' : '') + transcript : ''))
+    setTextInput(prevVal => prevVal + (transcript.length ? (prevVal.length ? ' ' : '') + transcript : ''))
     stopListening()
   }
 
@@ -159,7 +160,6 @@ const Dashboard = () => {
     return mood.qualifier ? `${mood.primary} ${mood.qualifier}` : mood.primary;
   };
 
-
   const handleAddNote = async () => {
     if (newNote.trim()) {
       const now = new Date();
@@ -182,6 +182,50 @@ const Dashboard = () => {
       // Clear the input field
       setNewNote('');
       await fetchSessionNotes();
+    }
+  };
+
+  const handleDeleteSession = async (sessionId) => {
+    try {
+      const { error } = await supabase
+        .from('SessionNotes')
+        .delete()
+        .eq('id', sessionId); // Assumes `id` is the primary key in your table
+
+      if (error) {
+        console.error('Error deleting session:', error);
+        return;
+      }
+
+      // Update the UI after successful deletion
+      await fetchSessionNotes();
+    } catch (error) {
+      console.error('Unexpected error deleting session:', error);
+    }
+  };
+
+  const fetchGenerateSummary = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('PatientSummaries')
+        .select('*');
+
+      if (error) {
+        throw error;
+      }
+
+      if (data) {
+        const summaries = data.map((summary) => ({
+          id: summary.id,
+          patient_id: summary.patient_id,
+          summary: summary.summary,
+          date: new Date(summary.created_at).toLocaleString(),
+        })).sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by latest date
+
+        setPatientSummaries(summaries);
+      }
+    } catch (error) {
+      console.error('Error fetching patient summaries:', error);
     }
   };
 
@@ -295,11 +339,11 @@ const Dashboard = () => {
           {/* Patient Info Section */}
           <div className="flex justify-between items-start mb-8">
             <div className="flex gap-8">
-            <img
-  src={patientImage}
-  alt="Patient"
-  className="w-24 h-24 rounded-xl object-cover"
-/>
+              <img
+                src={patientImage}
+                alt="Patient"
+                className="w-24 h-24 rounded-xl object-cover"
+              />
               <div className="space-y-6">
                 <div className="grid grid-cols-4 gap-8">
                   <div className="flex items-center">
@@ -385,31 +429,59 @@ const Dashboard = () => {
             <AlertTriangle className="w-6 h-6 text-yellow-500" />
           </div>
 
-          {/* TODO: Patient Summary Section */}
+          {/* Patient Summary Section */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Patient Summary:</h2>
             </div>
 
-            <Card className="p-6">
-              <div>
-                {/* Header */}
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-500 text-sm">
-                  </span>
-                </div>
+            {patientSummaries.length > 0 ? (
+              <Card className="p-6 space-y-4">
+                {patientSummaries.map((summary) => (
+                  <div key={summary.id} className="mb-4">
+                    {/* Summary Header */}
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-medium">Summary</h4>
+                      <span className="text-gray-500 text-sm">{summary.date}</span>
+                    </div>
 
-                {/* Summary with expand/collapse */}
-                <div
-                  className={`text-gray-700 mb-4`}
-                ></div>
-              </div>
-            </Card>
+                    {/* Summary Content with Expand/Collapse */}
+                    <div
+                      className={`text-gray-700 mb-4 ${expandedCards[summary.id] ? "" : "line-clamp-3"
+                        }`}
+                    >
+                      {summary.summary}
+                    </div>
 
-            {/* Add Generate Summary Button */}
+                    {summary.summary.length > 100 && (
+                      <div className="flex justify-between items-center">
+                        <button
+                          className="text-sm text-gray-500 flex items-center"
+                          onClick={() => toggleCard(summary.id)}
+                        >
+                          {expandedCards[summary.id] ? "Collapse" : "Expand"}
+                          <span
+                            className={`ml-1 transform ${expandedCards[summary.id] ? "rotate-180" : ""
+                              }`}
+                          >
+                            ▼
+                          </span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </Card>
+            ) : (
+              <Card className="p-6 text-gray-500">
+                No summaries available. Click "Generate Summary" to fetch.
+              </Card>
+            )}
+
+            {/* Add Generate Summary */}
             <div className="flex justify-end gap-2 mt-4">
               <Button
-                onClick={handleAddNote}
+                onClick={fetchGenerateSummary}
                 className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" /> Generate Summary
@@ -426,13 +498,13 @@ const Dashboard = () => {
             {/* Rich Text Editor for New Note */}
             <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
               <ReactQuill
-                className="min-h-[120px] w-full"
+                className="min-h-[120px] w-full custom-quill-editor"
                 style={{
                   height: '120px',      // Custom height of the editor container
                 }}
                 theme="bubble"
                 placeholder="Enter session notes..."
-                value={newNote }
+                value={newNote}
                 onChange={setNewNote}
                 modules={{
                   toolbar: false, // Toolbar hidden for simplicity
@@ -440,19 +512,19 @@ const Dashboard = () => {
               />
             </div>
 
-            {/* Add New Note Button */}
+            {/* Add New Note */}
             <div className="flex justify-end gap-2">
               <Button
-                onClick={() => {startStopListening()}} // TODO: handle speech-to-text functionality here
+                onClick={() => { startStopListening() }}
                 className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
               >
                 <BsMic className="w-4 h-4" /> {/* Recorder icon */}
-                {isListening ? "Stop recording" : "Dictate Note"  }
+                {isListening ? "Stop recording" : "Dictate Note"}
               </Button>
               <textarea
-                disabled = {isListening}
-                value = {isListening ? textInput + (transcript.length ? (textInput.length ? ' ' : '') + transcript : '') : textInput}
-                onChange={(e) => {setTextInput(e.target.value)}}
+                disabled={isListening}
+                value={isListening ? textInput + (transcript.length ? (textInput.length ? ' ' : '') + transcript : '') : textInput}
+                onChange={(e) => { setTextInput(e.target.value) }}
               />
               <Button
                 onClick={handleAddNote}
@@ -485,20 +557,30 @@ const Dashboard = () => {
                         dangerouslySetInnerHTML={{ __html: session.summary }}
                       ></div>
 
-                      {session.summary.length > 100 && (
-                        <button
-                          className="text-sm text-gray-500 flex items-center"
-                          onClick={() => toggleCard(session.id)}
-                        >
-                          {expandedCards[session.id] ? "Collapse" : "Expand"}
-                          <span
-                            className={`ml-1 transform ${expandedCards[session.id] ? "rotate-180" : ""
-                              }`}
+                      <div className="flex justify-between items-center">
+                        {session.summary.length > 100 && (
+                          <button
+                            className="text-sm text-gray-500 flex items-center"
+                            onClick={() => toggleCard(session.id)}
                           >
-                            ▼
-                          </span>
+                            {expandedCards[session.id] ? "Collapse" : "Expand"}
+                            <span
+                              className={`ml-1 transform ${expandedCards[session.id] ? "rotate-180" : ""
+                                }`}
+                            >
+                              ▼
+                            </span>
+                          </button>
+                        )}
+
+                        {/* Delete Button */}
+                        <button
+                          className="text-sm text-red-500 hover:underline ml-auto"
+                          onClick={() => handleDeleteSession(session.id)}
+                        >
+                          Delete Session
                         </button>
-                      )}
+                      </div>
                     </div>
                   </Card>
                 ))}
