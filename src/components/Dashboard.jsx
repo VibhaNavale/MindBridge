@@ -173,37 +173,40 @@ const Dashboard = () => {
   };
 
   const handleAddNote = async () => {
-    if (newNote.trim() !== "") {
-      const now = new Date();
+    try {
+      if (newNote.trim() !== "") {
+        // Get a random mood
+        const randomMood = getRandomMood();
 
-      // Get a random mood
-      const randomMood = getRandomMood();
+        const { error } = await supabase
+          .from('SessionNotes')
+          .insert({
+            session_info: newNote,
+            mood: randomMood
+          });
 
-      const { data, error } = await supabase
-        .from('SessionNotes')
-        .insert({
-          session_info: newNote,
-          mood: randomMood
-        });
+        if (error) {
+          console.error('Error saving session:', error);
+          return;
+        }
 
-      if (error) {
-        console.error('Error saving session:', error);
-        return;
+        // Clear the input field
+        setNewNote('');
+        toast.success("Session notes successfully added!", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        })
+        await fetchSessionNotes();
       }
-
-      // Clear the input field
-      setNewNote('');
-      toast.success("Session notes successfully added!", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      })
-      await fetchSessionNotes();
+    } catch (error) {
+      console.error("Error occurred while adding a new session note: ", error);
+      toast.error("Unable to add a new note. Please try again later.")
     }
   };
 
@@ -233,6 +236,7 @@ const Dashboard = () => {
       await fetchSessionNotes();
     } catch (error) {
       console.error('Unexpected error deleting session:', error);
+      toast.error("Unable to delete session note. Please try again later.")
     }
   };
 
@@ -527,7 +531,7 @@ const Dashboard = () => {
               <Button
                 onClick={fetchGenerateSummary}
                 className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
-                style={{borderRadius: "40px"}}
+                style={{ borderRadius: "40px" }}
               >
                 <Plus className="w-4 h-4" /> Generate Summary
               </Button>
@@ -563,7 +567,7 @@ const Dashboard = () => {
               <button
                 onClick={handleStartStopListening}
                 className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
-                style={{borderRadius: "40px"}}
+                style={{ borderRadius: "40px" }}
               >
                 {isListening ? (
                   <ScaleLoader color="#fff" height={12} width={2} radius={20} />
@@ -575,7 +579,7 @@ const Dashboard = () => {
               <button
                 onClick={handleAddNote}
                 className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
-                style={{borderRadius: "40px"}}
+                style={{ borderRadius: "40px" }}
               >
                 <Plus className="w-4 h-4" /> Add New Note
               </button>
